@@ -135,20 +135,3 @@ if __name__ == "__main__":
     shap_local = get_shap_local(model_native, client_data)
     print(f"SHAP local client {client_id}:", shap_local)
 
-
-if __name__ == "__main__":
-    model_pyfunc = load_model()
-    model_native = load_model_lightgbm()
-    df_clients = load_client_data()
-
-    # Préparer un échantillon de données pour SHAP global (ex : les 100 premiers)
-    X_background = df_clients.head(100).copy()
-    X_background = convert_numeric_columns_to_model_dtype(model_pyfunc, X_background)
-
-    # Afficher colonnes pour debug
-    print("Colonnes modèle :", list(model_native.feature_name_))
-    print("Colonnes X_background :", list(X_background.columns))
-
-    # SHAP global
-    shap_global = get_shap_global(model_native, X_background)
-    print("SHAP global:", shap_global)
