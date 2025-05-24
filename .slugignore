@@ -1,0 +1,7 @@
+data/
+notebooks/
+tests/
+*.csv
+*.ipynb
+.env
+*.env
