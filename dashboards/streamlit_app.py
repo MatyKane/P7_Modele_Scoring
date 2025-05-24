@@ -3,6 +3,22 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 import shap
+from PIL import Image
+import os
+
+# Chargement du logo (adapté pour Heroku)
+logo_path = os.path.join(os.path.dirname(__file__), "logo.png")
+
+if os.path.exists(logo_path):
+    logo = Image.open(logo_path)
+    st.image(logo, width=150) 
+st.markdown("""
+Bienvenue sur l'application de scoring de risque de défaut.  
+Cette application permet de prédire la probabilité qu'un client ne rembourse pas son crédit,  
+en se basant sur un modèle de machine learning entraîné sur des données réelles.
+
+Saisissez un identifiant client pour obtenir la prédiction et des explications visuelles avec SHAP.
+""")
 
 # Config API - modifier selon local ou cloud
 API_URL = st.secrets.get("API_URL") or "http://localhost:8000"
