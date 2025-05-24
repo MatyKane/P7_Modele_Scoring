@@ -1,0 +1,9 @@
+.streamlit/secrets.toml
+
+# Ignorer gros fichiers de données et binaires lourds
+data/application_train.csv
+data/application_test.csv
+data/clients_test.csv
+mlruns/
+dashboards/data_drift_analysis.html
+env/

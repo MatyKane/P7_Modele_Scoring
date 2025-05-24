@@ -40,6 +40,9 @@ def main():
 
     for model_name, (model, param_grid) in MODELS_CONFIG.items():
         with mlflow.start_run(run_name=model_name):
+            # Log des hyperparamètres
+            mlflow.log_params(param_grid)
+            
             pipe = Pipeline([
                 ("sampling", SMOTE()),
                 ("model", model)
