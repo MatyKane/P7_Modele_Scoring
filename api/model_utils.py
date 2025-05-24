@@ -134,4 +134,3 @@ if __name__ == "__main__":
     client_data = convert_numeric_columns_to_model_dtype(model_pyfunc, client_data)
     shap_local = get_shap_local(model_native, client_data)
     print(f"SHAP local client {client_id}:", shap_local)
-

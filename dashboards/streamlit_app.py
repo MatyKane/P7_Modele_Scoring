@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import shap
 from PIL import Image
 import os
+import numpy as np
 
 # Chargement du logo (adapté pour Heroku)
 logo_path = os.path.join(os.path.dirname(__file__), "logo.png")
@@ -52,6 +53,11 @@ if st.button("Afficher l'explication globale (SHAP)"):
         shap_df = pd.DataFrame({"Feature": features, "Importance": values})
         shap_df = shap_df.sort_values("Importance", ascending=True)
 
+        # Ne garder que les 10 features les plus importantes (en valeur absolue)
+        shap_df = shap_df.reindex(shap_df.Importance.abs().sort_values(ascending=False).index)  # tri décroissant par importance absolue
+        shap_df = shap_df.head(10)
+        shap_df = shap_df.sort_values("Importance", ascending=True)  # re-tri pour affichage horizontal propre
+
         fig, ax = plt.subplots()
         ax.barh(shap_df["Feature"], shap_df["Importance"])
         ax.set_title("Importance des variables (SHAP global)")
@@ -70,14 +76,18 @@ if st.button("Afficher l'explication locale (SHAP)"):
         expected_value = shap_data["expected_value"]
         features = shap_data["features"]
 
+        # Préparation des données shap
         shap_df = pd.DataFrame([features])
-        explainer = shap.Explanation(values=shap_values,
-                                     base_values=expected_value,
-                                     data=shap_df,
-                                     feature_names=list(features.keys()))
+        explainer = shap.Explanation(
+            values=np.array(shap_values),
+            base_values=expected_value,
+            data=shap_df,
+            feature_names=list(features.keys())
+        )       
 
-        st.set_option("deprecation.showPyplotGlobalUse", False)
-        shap.plots.waterfall(explainer[0])
-        st.pyplot(bbox_inches='tight')
-    else:
-        st.error("Erreur lors de la récupération des SHAP local.")
+        # Affichage SHAP waterfall
+        ax = shap.plots.waterfall(explainer[0], max_display=10, show=False)  # ax est un matplotlib.axes.Axes
+        fig = ax.figure  # récupérer la figure complète
+        st.pyplot(fig)
+        plt.close(fig)
+    
