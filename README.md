@@ -33,14 +33,12 @@ La mission 1 se déclinera autour des objectifs suivants :
 * Intégrer des tests unitaires automatisés avec Pytest ou Unittest.
 * Proposer une interface de test locale (via Streamlit ou notebook) pour simuler des requêtes vers l’API.
 
-**En Pièce-jointe : la liste des outils MLOps à utiliser.**
 
 Michaël, notre manager, nous incite à sélectionner un ou des kernels Kaggle (des notebooks publics partagés par d'autres data scientists), pour nous faciliter l’analyse exploratoire, et nous aider à gagner du temps sur les premières étapes du projet, comme **L’analyse exploratoire des données (EDA)**, **La préparation des données (nettoyage, traitement des valeurs manquantes, encodage des variables, etc.)**, **Le feature engineering (création de nouvelles variables utiles pour le modèle).**
 
-Par exemple nous pouvons nous inspirer des kernels Kaggle suivants : 
+Nous nous sommes inspirés des kernels Kaggle suivants : 
 * Pour l’analyse exploratoire : https://www.kaggle.com/code/willkoehrsen/start-here-a-gentle-introduction/notebook
 * Pour la préparation des données et le feature engineering : https://www.kaggle.com/code/jsaguiar/lightgbm-with-simple-features/script
-* C’est optionnel, mais vivement recommandé afin de nous permettre de nous focaliser sur l’élaboration du modèle, son optimisation et sa compréhension.
 
 ***
 
@@ -61,7 +59,18 @@ En prévision, il souhaiterait que nous testions l’utilisation de la librairie
 * Comparer les deux jeux de données (les datas d’entraînement et les datas de production).
 * Générer un rapport HTML qui permet de détecter les éventuels Data Drift sur les features principales.
 
-**Rappel :** Il nous renvoie également la liste des outils MLOps déjà partagée précédemment (MLFlow, Git, Github Actions, Pytest, etc.).
+
+
+**Ce projet a donc pour objectif de construire, suivre, déployer et monitorer un **modèle de scoring de crédit** permettant d’automatiser la prise de décision concernant l’octroi d’un prêt à un client.**
+
+L’ensemble du projet inclut :
+- Le **prétraitement des données** et la **modélisation Machine Learning**
+- Le **tracking des expérimentations avec MLFlow**
+- Le **déploiement du modèle sous forme d’API sur le cloud**
+- L’**analyse du data drift** avec Evidently
+- Une interface de **test client via Streamlit**
+
+***
 
 **Livrables**
 Notebook de préparation des données et modélisation
@@ -70,3 +79,64 @@ Dossier Dashboard contenant les fichiers liés au fonctionnement du dashboard
 Interface Streamlit de test
 Rapport Evidently de détection de dérive
 Présentation finale du projet
+
+***
+
+**Structure du projet**
+P7_Modele_Scoring/
+│
+├── data/                          # Données brutes et prétraitées
+│   ├── data_train.csv
+│   ├── application_train.csv
+│   ├── application_test.csv
+│
+├── notebooks/                    # Notebooks de développement
+│   ├── 01_data_preprocessing.ipynb
+│   ├── 02_model_training_with_mlflow.ipynb
+│
+├── src/                          # Code source principal
+│   ├── preprocessing.py
+│   ├── merging.py
+│   ├── feature_engineering.py
+│   ├── train_model.py
+│   ├── evaluate_model.py
+│   ├── mlflow_tracking.py
+│   ├── config.py
+│   ├── utils.py
+│   ├── Vizualisation.py
+│   ├── data_drift_report.py
+│
+├── api/                          # Code de l’API FasApi
+│   ├── app.py                    # Entrée principale de l’API
+│   ├── model_utils.py           # Chargement - prédiction via le modèle
+│
+├── dashboards/                   # Outils d’analyse et interface de test
+│   ├── data_drift_analysis.html # Rapport de drift Evidently
+│   ├── streamlit_app.py         # Interface de test Streamlit
+│
+├── tests/                        # Tests unitaires
+│   ├── test_preprocessing.py
+│   ├── test_prediction.py
+│
+├── .github/workflows/           # Intégration continue (CI/CD GitHub Actions)
+│   ├── test_and_deploy.yml
+│
+├── mlruns/                       # Tracking des expérimentations MLflow (auto)
+│
+├── Procfile                      # Déploiement Heroku
+├── requirements.txt             # Dépendances du projet
+├── streamlit_app.py             # Point d’entrée
+├── test_mlflow.py               # Test de tracking
+├── .gitignore                   # Fichiers ignorés par Git
+├── README.md                    # Documentation du projet
+
+***
+
+📬 Contact
+Nom : Maty KANE
+
+Email : matymbaye09@live.fr
+
+GitHub : github.com/MatyKane
+
+Projet réalisé dans le cadre du parcours Data Scientist – OpenClassrooms.
