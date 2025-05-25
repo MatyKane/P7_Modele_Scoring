@@ -1,1 +1,1 @@
-web: bash setup_streamlit.sh && streamlit run dashboards/streamlit_app.py
+web: bash setup_streamlit.sh && streamlit run dashboards/streamlit_app.py --server.port=$PORT --server.enableCORS=false
