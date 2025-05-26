@@ -1,25 +1,18 @@
-import mlflow.pyfunc
-import os
-import pandas as pd
-
-# --- Chargement modèle pyfunc (pipeline sklearn) depuis dossier local ---
+# --- Chargement modèle pyfunc (pipeline sklearn) depuis le modèle enregistré dans MLflow Registry ---
 def load_model():
-    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))  # pris dans variable d'env
-    model_uri = "models:/Light_GBM_Best_Model_1"  # modèle dans le registry, stage Production
-    mlflow.set_tracking_uri("https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app")
+    # Récupérer l'URI du tracking MLflow depuis variable d'environnement
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
+    if tracking_uri:
+        mlflow.set_tracking_uri(tracking_uri)
+    else:
+        raise ValueError("La variable d'environnement MLFLOW_TRACKING_URI n'est pas définie.")
+    
+    # URI du modèle dans MLflow Registry, stage 'Production'
+    model_uri = "models:/Light_GBM_Best_Model_1/Production"
+    
+    # Charger et retourner le modèle
     model = mlflow.pyfunc.load_model(model_uri)
     return model
-
-# --- Chargement modèle LightGBM natif (pour SHAP) depuis dossier local ---
-def load_model_lightgbm():
-    local_model_path = os.getenv(
-        "LOCAL_MODEL_PATH",
-        "C:/Users/matym/P7_Modele_Scoring/Light-GBM_Best_Model_1"
-    )
-    model_pyfunc = mlflow.pyfunc.load_model(local_model_path)
-    pipeline = model_pyfunc._model_impl.sklearn_model
-    model_native = pipeline.named_steps["model"]
-    return model_native
 
 # --- Chargement données clients ---
 def load_client_data():
