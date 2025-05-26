@@ -1,1 +1,1 @@
-streamlit run dashboards/streamlit_app.py --server.port=10000 --server.enableCORS=false
+streamlit run dashboards/streamlit_app.py --server.port=$PORT --server.enableCORS=false
