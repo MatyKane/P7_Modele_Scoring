@@ -9,11 +9,11 @@ import numpy as np
 
 
 # Chargement du logo (adapté pour Heroku)
-try:
-    logo = Image.open("logo.png")
-    st.image(logo, width=150)
-except Exception as e:
-    st.warning(f"Logo non affiché : {e}")
+#try:
+#    logo = Image.open("logo.png")
+#    st.image(logo, width=150)
+#except Exception as e:
+#    st.warning(f"Logo non affiché : {e}")
 st.markdown("""
 Bienvenue sur l'application de scoring de risque de défaut.  
 Cette application permet de prédire la probabilité qu'un client ne rembourse pas son crédit,  
