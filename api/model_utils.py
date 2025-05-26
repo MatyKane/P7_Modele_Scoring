@@ -6,6 +6,7 @@ import pandas as pd
 def load_model():
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))  # pris dans variable d'env
     model_uri = "models:/LightGBM_Best_Model_1"  # modèle dans le registry, stage Production
+    mlflow.set_tracking_uri("https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app")
     model = mlflow.pyfunc.load_model(model_uri)
     return model
 
