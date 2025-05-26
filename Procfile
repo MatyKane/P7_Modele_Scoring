@@ -1,1 +1,1 @@
-streamlit run dashboards/streamlit_app.py --server.port=$PORT --server.enableCORS=false
+web: uvicorn api.app:app --host=0.0.0.0 --port=${PORT:-8000}
