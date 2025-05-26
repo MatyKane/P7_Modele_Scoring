@@ -26,3 +26,9 @@ jobs:
       - name: Run tests
         run: |
           pytest tests/ --disable-warnings
+
+      - name: Deploy to Render
+        uses: render-examples/deploy-to-render@v1
+        with:
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}

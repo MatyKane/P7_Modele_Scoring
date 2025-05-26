@@ -3,10 +3,7 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 import shap
-from PIL import Image
-import os
 import numpy as np
-
 
 st.title("Scoring Model Interface")
 
@@ -21,73 +18,85 @@ Saisissez un identifiant client pour obtenir la prédiction et des explications 
 # Config API - modifier selon local ou cloud
 API_URL = st.secrets.get("API_URL") or "https://solvability.onrender.com"
 
-st.title("Prédiction risque défaut - Interface")
-
+# Barre latérale navigation
 st.sidebar.title("Navigation")
-option = st.sidebar.radio("Choisissez une section :", ["Accueil", "Prédiction", "SHAP Global", "SHAP Local"])
+section = st.sidebar.radio("Choisissez une section :", ["Accueil", "Prédiction", "SHAP Global", "SHAP Local"])
 
-client_id = st.number_input("Saisir un ID client", min_value=1, step=1)
+# Input client_id commun à toutes les sections (on évite de demander plusieurs fois)
+client_id = st.number_input("Saisir un ID client", min_value=1, step=1, key="client_id_input")
 
-if st.button("Prédire le risque"):
-    response = requests.get(f"{API_URL}/predict/{client_id}")
-    if response.status_code == 200:
-        data = response.json()
-        if "error" in data:
-            st.error(data["error"])
-        else:
-            st.write("Résultat prédiction :")
-            st.json(data)
-    else:
-        st.error(f"Erreur API : {response.status_code}")
+if section == "Accueil":
+    st.write("Sélectionnez une section dans la barre latérale pour commencer.")
 
-# --- Visualisation SHAP Global ---
-st.subheader("SHAP - Importance Globale des Features")
+elif section == "Prédiction":
+    seuil = st.slider("Seuil métier", min_value=0.0, max_value=1.0, value=0.545, step=0.01)
 
-if st.button("Afficher l'explication globale (SHAP)"):
-    response = requests.get(f"{API_URL}/shap/global")
-    if response.status_code == 200:
-        shap_data = response.json()
-        features = shap_data["features"]
-        values = shap_data["values"]
+    if st.button("Prédire le risque"):
+        try:
+            url = f"{API_URL}/predict/{client_id}?seuil={seuil}"
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+            if "error" in data:
+                st.error(data["error"])
+            else:
+                st.subheader("Résultat prédiction")
+                st.json(data)
+        except requests.exceptions.RequestException as e:
+            st.error(f"Erreur lors de la requête API : {e}")
 
-        shap_df = pd.DataFrame({"Feature": features, "Importance": values})
-        shap_df = shap_df.sort_values("Importance", ascending=True)
+elif section == "SHAP Global":
+    if st.button("Afficher l'explication globale (SHAP)"):
+        try:
+            response = requests.get(f"{API_URL}/shap/global")
+            response.raise_for_status()
+            shap_data = response.json()
 
-        # Ne garder que les 10 features les plus importantes (en valeur absolue)
-        shap_df = shap_df.reindex(shap_df.Importance.abs().sort_values(ascending=False).index)  # tri décroissant par importance absolue
-        shap_df = shap_df.head(10)
-        shap_df = shap_df.sort_values("Importance", ascending=True)  # re-tri pour affichage horizontal propre
+            features = shap_data["features"]
+            values = shap_data["values"]
 
-        fig, ax = plt.subplots()
-        ax.barh(shap_df["Feature"], shap_df["Importance"])
-        ax.set_title("Importance des variables (SHAP global)")
-        st.pyplot(fig)
-    else:
-        st.error("Erreur lors de la récupération des SHAP global.")
+            shap_df = pd.DataFrame({"Feature": features, "Importance": values})
+            # Tri décroissant par importance absolue et garder top 10
+            shap_df = shap_df.reindex(shap_df.Importance.abs().sort_values(ascending=False).index).head(10)
+            shap_df = shap_df.sort_values("Importance", ascending=True)
 
-# --- Visualisation SHAP Local ---
-st.subheader("SHAP - Explication Locale pour ce client")
+            fig, ax = plt.subplots(figsize=(8,5))
+            ax.barh(shap_df["Feature"], shap_df["Importance"], color='royalblue')
+            ax.set_title("Importance des variables (SHAP global)")
+            ax.set_xlabel("Importance moyenne absolue")
+            st.pyplot(fig)
+        except requests.exceptions.RequestException as e:
+            st.error(f"Erreur lors de la récupération des SHAP global : {e}")
 
-if st.button("Afficher l'explication locale (SHAP)"):
-    response = requests.get(f"{API_URL}/shap/local/{client_id}")
-    if response.status_code == 200:
-        shap_data = response.json()
-        shap_values = shap_data["shap_values"]
-        expected_value = shap_data["expected_value"]
-        features = shap_data["features"]
+elif section == "SHAP Local":
+    if st.button("Afficher l'explication locale (SHAP)"):
+        try:
+            response = requests.get(f"{API_URL}/shap/local/{client_id}")
+            response.raise_for_status()
+            shap_data = response.json()
 
-        # Préparation des données shap
-        shap_df = pd.DataFrame([features])
-        explainer = shap.Explanation(
-            values=np.array(shap_values),
-            base_values=expected_value,
-            data=shap_df,
-            feature_names=list(features.keys())
-        )       
+            shap_values = np.array(shap_data["shap_values"])
+            expected_value = shap_data["expected_value"]
+            features = shap_data["features"]  # dict {feature_name: value}
 
-        # Affichage SHAP waterfall
-        ax = shap.plots.waterfall(explainer[0], max_display=10, show=False)  # ax est un matplotlib.axes.Axes
-        fig = ax.figure  # récupérer la figure complète
-        st.pyplot(fig)
-        plt.close(fig)
-    
+            # Préparation des données : on veut un DataFrame 1 ligne avec colonnes dans le bon ordre
+            feature_names = list(features.keys())
+            feature_values = [features[f] for f in feature_names]
+            shap_df = pd.DataFrame([feature_values], columns=feature_names)
+
+            explainer = shap.Explanation(
+                values=shap_values,
+                base_values=expected_value,
+                data=shap_df.values,
+                feature_names=feature_names
+            )
+
+            fig = plt.figure(figsize=(10, 5))
+            shap.plots.waterfall(explainer[0], max_display=10, show=False)
+            st.pyplot(fig)
+            plt.close(fig)
+
+        except requests.exceptions.RequestException as e:
+            st.error(f"Erreur lors de la récupération des SHAP local : {e}")
+        except Exception as e:
+            st.error(f"Erreur lors de l'affichage SHAP local : {e}")

@@ -1,22 +1,24 @@
-import mlflow
 import mlflow.pyfunc
-import mlflow.lightgbm
 import os
 import pandas as pd
 
-# --- Chargement modèle pyfunc (pipeline sklearn) ---
+# --- Chargement modèle pyfunc (pipeline sklearn) depuis dossier local ---
 def load_model():
-    model_path = "models:/Light_GBM_Best_Model/1"
-    model = mlflow.pyfunc.load_model(model_path)
+    local_model_path = os.getenv(
+        "LOCAL_MODEL_PATH",
+        "C:/Users/matym/P7_Modele_Scoring/LightGBM_Best_Model_1"
+    )
+    model = mlflow.pyfunc.load_model(local_model_path)
     return model
 
-# --- Chargement modèle LightGBM natif (pour SHAP) ---
+# --- Chargement modèle LightGBM natif (pour SHAP) depuis dossier local ---
 def load_model_lightgbm():
-    model_path = "models:/Light_GBM_Best_Model/1"
-    model_pyfunc = mlflow.pyfunc.load_model(model_path)
-    # Accès au pipeline sklearn encapsulé dans pyfunc
+    local_model_path = os.getenv(
+        "LOCAL_MODEL_PATH",
+        "C:/Users/matym/P7_Modele_Scoring/LightGBM_Best_Model_1"
+    )
+    model_pyfunc = mlflow.pyfunc.load_model(local_model_path)
     pipeline = model_pyfunc._model_impl.sklearn_model
-    # Extraction du modèle LightGBM natif (dernier step nommé "model")
     model_native = pipeline.named_steps["model"]
     return model_native
 
@@ -59,7 +61,7 @@ def predict_default(model, client_id, df_clients, seuil_metier=0.545454545454545
         return {"error": f"Client {client_id} non trouvé."}
     
     client_data = df_clients.loc[[client_id]].copy()
-    client_data["SK_ID_CURR"] = client_id  # Parfois requis selon le modèle
+    client_data["SK_ID_CURR"] = client_id  # parfois requis selon modèle
 
     client_data = convert_numeric_columns_to_model_dtype(model, client_data)
 
@@ -84,7 +86,6 @@ def predict_default(model, client_id, df_clients, seuil_metier=0.545454545454545
         "prediction": prediction,
         "seuil_metier": seuil_metier
     }
-
 
 # --- SHAP global ---
 def get_shap_global(model_native, X_background):
@@ -112,25 +113,3 @@ def get_shap_local(model_native, client_data):
         "expected_value": expected_value[0] if isinstance(expected_value, (list, tuple)) else expected_value,
         "features": client_data.iloc[0].to_dict()
     }
-
-# --- Exemple d'utilisation ---
-
-if __name__ == "__main__":
-    model_pyfunc = load_model()
-    model_native = load_model_lightgbm()
-    df_clients = load_client_data()
-
-    # Préparer un échantillon de données pour SHAP global (ex : les 100 premiers)
-    X_background = df_clients.head(100).copy()
-    X_background = convert_numeric_columns_to_model_dtype(model_pyfunc, X_background)
-
-    # SHAP global
-    shap_global = get_shap_global(model_native, X_background)
-    print("SHAP global:", shap_global)
-
-    # SHAP local sur un client
-    client_id = df_clients.index[0]
-    client_data = df_clients.loc[[client_id]].copy()
-    client_data = convert_numeric_columns_to_model_dtype(model_pyfunc, client_data)
-    shap_local = get_shap_local(model_native, client_data)
-    print(f"SHAP local client {client_id}:", shap_local)
