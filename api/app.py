@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from api.model_utils import (
     load_model,
-    load_model_lightgbm,
+    # load_model_lightgbm,  # supprimé car plus dispo dans model_utils.py
     load_client_data,
     convert_numeric_columns_to_model_dtype,
     predict_default,
@@ -18,7 +18,7 @@ app = FastAPI(title="API Scoring Crédit")
 
 # Chargement modèle et données au démarrage (depuis dossier local)
 model_pyfunc = load_model()               # modèle pyfunc sklearn pipeline (pour prédiction)
-model_native = load_model_lightgbm()      # modèle LightGBM natif (pour SHAP)
+# model_native = load_model_lightgbm()   # supprimé car fonction supprimée
 df_clients = load_client_data()           
 
 # Préparation des données de fond pour SHAP global (ex : 100 premiers clients)
@@ -40,7 +40,7 @@ def predict(client_id: int, seuil: float = 0.5454545454545455):
 def shap_global():
     try:
         X_bg = X_background.reset_index()  # reset index pour remettre SK_ID_CURR en colonne
-        shap_result = get_shap_global(model_native, X_bg)
+        shap_result = get_shap_global(model_pyfunc, X_bg)  # note: ici j’ai mis model_pyfunc car model_native n'existe plus
         return shap_result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur SHAP global : {e}")
@@ -53,7 +53,7 @@ def shap_local(client_id: int):
     client_data = client_data.reset_index()  # reset index aussi ici
     client_data = convert_numeric_columns_to_model_dtype(model_pyfunc, client_data)
     try:
-        shap_result = get_shap_local(model_native, client_data)
+        shap_result = get_shap_local(model_pyfunc, client_data)  # pareil ici
         return shap_result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur SHAP local : {e}")
