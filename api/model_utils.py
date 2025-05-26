@@ -4,10 +4,7 @@ import pandas as pd
 
 # --- Chargement modèle pyfunc (pipeline sklearn) depuis dossier local ---
 def load_model():
-    local_model_path = os.getenv(
-        "LOCAL_MODEL_PATH",
-        "C:/Users/matym/P7_Modele_Scoring/LightGBM_Best_Model_1"
-    )
+    local_model_path = "./P7_Modele_Scoring"  # chemin relatif au repo Render
     model = mlflow.pyfunc.load_model(local_model_path)
     return model
 
