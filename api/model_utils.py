@@ -4,8 +4,9 @@ import pandas as pd
 
 # --- Chargement modèle pyfunc (pipeline sklearn) depuis dossier local ---
 def load_model():
-    local_model_path = "./P7_Modele_Scoring"  # chemin relatif au repo Render
-    model = mlflow.pyfunc.load_model(local_model_path)
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))  # pris dans variable d'env
+    model_uri = "models:/LightGBM_Best_Model_1"  # modèle dans le registry, stage Production
+    model = mlflow.pyfunc.load_model(model_uri)
     return model
 
 # --- Chargement modèle LightGBM natif (pour SHAP) depuis dossier local ---

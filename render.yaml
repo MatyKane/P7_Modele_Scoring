@@ -1,8 +1,13 @@
 services:
   - type: web
-    name: p7-api-scoring
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn api.app:app --host=0.0.0.0 --port=10000"
+    name: mlflow-server
+    env: docker
     plan: free
-    region: frankfurt
+    dockerfilePath: Dockerfile
+    autoDeploy: true
+    ports:
+      - port: 5000
+    healthCheckPath: /
+    persistentDisk:
+      mountPath: /app/artifacts
+      sizeGb: 1
