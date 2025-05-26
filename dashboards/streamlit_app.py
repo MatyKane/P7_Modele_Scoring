@@ -7,12 +7,13 @@ from PIL import Image
 import os
 import numpy as np
 
-# Chargement du logo (adapté pour Heroku)
-logo_path = os.path.join(os.path.dirname(__file__), "logo.png")
 
-if os.path.exists(logo_path):
-    logo = Image.open(logo_path)
-    st.image(logo, width=150) 
+# Chargement du logo (adapté pour Heroku)
+try:
+    logo = Image.open("logo.png")
+    st.image(logo, width=150)
+except Exception as e:
+    st.warning(f"Logo non affiché : {e}")
 st.markdown("""
 Bienvenue sur l'application de scoring de risque de défaut.  
 Cette application permet de prédire la probabilité qu'un client ne rembourse pas son crédit,  
@@ -25,6 +26,9 @@ Saisissez un identifiant client pour obtenir la prédiction et des explications 
 API_URL = st.secrets.get("API_URL") or "http://localhost:8000"
 
 st.title("Prédiction risque défaut - Interface")
+
+st.sidebar.title("Navigation")
+option = st.sidebar.radio("Choisissez une section :", ["Accueil", "Prédiction", "SHAP Global", "SHAP Local"])
 
 client_id = st.number_input("Saisir un ID client", min_value=1, step=1)
 
