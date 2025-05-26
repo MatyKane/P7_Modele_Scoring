@@ -8,6 +8,9 @@ import os
 import numpy as np
 
 
+# Récupération de l'URL de l'API depuis les secrets ou fallback sur localhost
+API_URL = st.secrets.get("API_URL") or "http://localhost:8000"
+
 if st.button("Prédire le risque"):
     response = requests.get(f"{API_URL}/predict/{client_id}")
     st.write("Status code:", response.status_code)
