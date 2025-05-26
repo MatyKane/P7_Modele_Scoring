@@ -8,12 +8,8 @@ import os
 import numpy as np
 
 
-# Chargement du logo (adapté pour Heroku)
-#try:
-#    logo = Image.open("logo.png")
-#    st.image(logo, width=150)
-#except Exception as e:
-#    st.warning(f"Logo non affiché : {e}")
+st.title("Scoring Model Interface")
+
 st.markdown("""
 Bienvenue sur l'application de scoring de risque de défaut.  
 Cette application permet de prédire la probabilité qu'un client ne rembourse pas son crédit,  
@@ -23,7 +19,7 @@ Saisissez un identifiant client pour obtenir la prédiction et des explications 
 """)
 
 # Config API - modifier selon local ou cloud
-API_URL = st.secrets.get("API_URL") or "http://localhost:8000"
+API_URL = st.secrets.get("API_URL") or "https://solvability.onrender.com"
 
 st.title("Prédiction risque défaut - Interface")
 
