@@ -18,16 +18,16 @@ def set_tracking_uri():
 
 # Chargement pyfunc depuis MLflow
 def load_model():
-    mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
-    model_uri = "models:/Light_GBM_Best_Model/3"
+    mlflow.set_tracking_uri("https://6ac1-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app")
+    model_uri = "models:/Light_GBM_Best_Model/latest"
     return mlflow.pyfunc.load_model(model_uri)
 
 # Chargement modèle LightGBM natif (depuis pipeline MLflow)
 # --- Chargement du modèle natif LightGBM depuis le pipeline ---
 def load_model_lightgbm():
-    # 🔧 Fix : utiliser le serveur MLflow distant (Ngrok)
+    # Fix : utiliser le serveur MLflow distant (Ngrok)
     mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
-    model_uri = "models:/Light_GBM_Best_Model/3"
+    model_uri = "models:/Light_GBM_Best_Model/latest"
     print(f"Chargement modèle natif depuis : {model_uri}")
     model_pyfunc = mlflow.pyfunc.load_model(model_uri)
     pipeline = model_pyfunc._model_impl.sklearn_model
@@ -65,7 +65,7 @@ def convert_numeric_columns_to_model_dtype(model, df):
                 print(f"Conversion échouée sur {col} en {dtype}: {e}")
     return df
 
-def predict_default(model, client_id, df_clients, seuil_metier=0.545):
+def predict_default(model, client_id, df_clients, seuil_metier=0.66):
     if client_id not in df_clients.index:
         return {"error": f"Client {client_id} non trouvé."}
 

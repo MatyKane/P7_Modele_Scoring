@@ -30,7 +30,7 @@ def root():
     return {"message": "API prédiction risque de défaut prête"}
 
 @app.get("/predict/{client_id}")
-def predict(client_id: int, seuil: float = 0.545):
+def predict(client_id: int, seuil: float = 0.66):
     result = predict_default(model_pyfunc, client_id, df_clients, seuil_metier=seuil)
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
@@ -56,4 +56,4 @@ def shap_local(client_id: int):
         raise HTTPException(status_code=500, detail=f"Erreur SHAP local : {e}")
     
 # Pour exécuter localement :
-# uvicorn app:app --reload --port 8000
+# uvicorn app:app --reload --port 5000

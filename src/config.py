@@ -9,7 +9,7 @@ TARGET_PATH = "TARGET.csv"
 TARGET_COL = "TARGET"
 
 # --- URIs MLflow ---
-MLFLOW_REMOTE_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
+MLFLOW_REMOTE_URI = "https://6ac1-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
 
 
 # --- Nom et stage du modèle MLflow ---
