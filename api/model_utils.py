@@ -19,7 +19,7 @@ def set_tracking_uri():
 # Chargement pyfunc depuis MLflow
 def load_model():
     mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
-    model_uri = "models:/Light_GBM_Best_Model/Production"
+    model_uri = "models:/Light_GBM_Best_Model/3"
     return mlflow.pyfunc.load_model(model_uri)
 
 # Chargement modèle LightGBM natif (depuis pipeline MLflow)
@@ -27,7 +27,7 @@ def load_model():
 def load_model_lightgbm():
     # 🔧 Fix : utiliser le serveur MLflow distant (Ngrok)
     mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
-    model_uri = "models:/Light_GBM_Best_Model/Production"
+    model_uri = "models:/Light_GBM_Best_Model/3"
     print(f"Chargement modèle natif depuis : {model_uri}")
     model_pyfunc = mlflow.pyfunc.load_model(model_uri)
     pipeline = model_pyfunc._model_impl.sklearn_model
