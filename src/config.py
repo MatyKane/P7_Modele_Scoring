@@ -26,9 +26,9 @@ COUT_FN = 10
 COUT_FP = 1
 
 # Modèles à tester
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
+#from sklearn.linear_model import LogisticRegression
+#from sklearn.ensemble import RandomForestClassifier
+#from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 
 MODELS_CONFIG = {
