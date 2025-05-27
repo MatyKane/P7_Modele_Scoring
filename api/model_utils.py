@@ -4,20 +4,22 @@ import mlflow.lightgbm
 import os
 import pandas as pd
 
-# URI MLflow distant via ngrok
-REMOTE_MLFLOW_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
-MODEL_URI = "models:/Light_GBM_Best_Model/Production"
+MLFLOW_REMOTE_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
+MODEL_NAME = "Light_GBM_Best_Model"
+MODEL_STAGE = "Production"
 
-# --- Chargement modèle pyfunc (pipeline sklearn) depuis serveur distant ---
+# --- Chargement modèle pyfunc (pipeline sklearn) depuis serveur MLflow ---
 def load_model():
-    mlflow.set_tracking_uri(REMOTE_MLFLOW_URI)
-    model = mlflow.pyfunc.load_model(MODEL_URI)
+    mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
+    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"  # utilise le modèle du Registry distant
+    model = mlflow.pyfunc.load_model(model_uri)
     return model
 
-# --- Chargement modèle LightGBM natif (pour SHAP) depuis serveur distant ---
+# --- Chargement modèle LightGBM natif (pour SHAP) depuis serveur ---
 def load_model_lightgbm():
-    mlflow.set_tracking_uri(REMOTE_MLFLOW_URI)
-    model_pyfunc = mlflow.pyfunc.load_model(MODEL_URI)
+    mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
+    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
+    model_pyfunc = mlflow.pyfunc.load_model(model_uri)
     pipeline = model_pyfunc._model_impl.sklearn_model
     model_native = pipeline.named_steps["model"]
     return model_native
