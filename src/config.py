@@ -1,24 +1,27 @@
 import os
 
-# Fichiers de données
+# --- Fichiers de données ---
 TRAIN_PATH = "data_train_final.zip"
 TEST_PATH = "data_test_final.zip"
 TARGET_PATH = "TARGET.csv"
 
-# Colonne cible
+# --- Colonne cible ---
 TARGET_COL = "TARGET"
 
-# MLflow
+# --- URIs MLflow ---
 MLFLOW_REMOTE_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
+
+# URI locale (pour développement local)
+LOCAL_MLFLOW_URI = f"file:///{os.path.abspath('./mlruns').replace(os.sep, '/')}"
+
+# URI dynamique selon l'environnement
+MLFLOW_TRACKING_URI = (
+    MLFLOW_REMOTE_URI if os.getenv("ENV") == "prod" else LOCAL_MLFLOW_URI
+)
+
+# --- Nom et stage du modèle MLflow ---
 MODEL_NAME = "Light_GBM_Best_Model"
 MODEL_STAGE = "Production"
-
-LOCAL_MLFLOW_URI = f"file:///{os.path.abspath('./mlruns').replace(os.sep, '/')}"
-REMOTE_MLFLOW_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
-if os.getenv("ENV") == "prod":
-    MLFLOW_TRACKING_URI = REMOTE_MLFLOW_URI
-else:
-    MLFLOW_TRACKING_URI = LOCAL_MLFLOW_URI
 
 # Coût métier
 COUT_FN = 10

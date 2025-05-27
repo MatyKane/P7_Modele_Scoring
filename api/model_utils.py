@@ -8,12 +8,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.config import MLFLOW_TRACKING_URI, MODEL_NAME, MODEL_STAGE
 
-MLFLOW_REMOTE_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
-MODEL_NAME = "Light_GBM_Best_Model"
-MODEL_STAGE = "Production"
 
 def load_model():
-    model_uri = f"{MLFLOW_TRACKING_URI}/306183281787906134/cabaeec2dcdd42c89d5a47511af1c6cd/artifacts/LightGBM"
+    model_uri = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app/306183281787906134/cabaeec2dcdd42c89d5a47511af1c6cd/artifacts/LightGBM"
     model = mlflow.pyfunc.load_model(model_uri)
     return model
 
