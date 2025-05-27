@@ -12,7 +12,7 @@ def load_model():
 
 # --- Chargement modèle LightGBM natif (pour SHAP) depuis dossier local ---
 def load_model_lightgbm():
-    model_path = "models:/Light_GBM_Best_Model/1"
+    model_path = "models:/Light_GBM_Best_Model_1/Production"
     model_pyfunc = mlflow.pyfunc.load_model(model_path)
     # Accès au pipeline sklearn encapsulé dans pyfunc
     pipeline = model_pyfunc._model_impl.sklearn_model
