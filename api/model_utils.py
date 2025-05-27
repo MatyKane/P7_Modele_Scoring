@@ -2,55 +2,44 @@ import os
 import sys
 import mlflow
 import mlflow.pyfunc
-import mlflow.lightgbm
 import pandas as pd
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.config import MODEL_NAME, MODEL_STAGE, MLFLOW_REMOTE_URI
 
-
-# --- Détection dynamique de l'URI MLflow ---
+# Détection dynamique MLflow
 def set_tracking_uri():
     env = os.getenv("ENV", "dev")
     if env == "prod":
-        print("ENV=prod : utilisation du serveur MLflow distant")
+        print("ENV=prod : serveur distant MLflow")
         mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
     else:
-        print("ENV=dev : utilisation du MLflow local")
+        print("ENV=dev : MLflow local")
         local_uri = f"file:///{os.path.abspath('./mlruns').replace(os.sep, '/')}"
         mlflow.set_tracking_uri(local_uri)
 
-
-# --- Chargement du modèle pyfunc (MLflow) ---
+# Chargement pyfunc depuis MLflow
 def load_model():
-    set_tracking_uri()
-    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
-    print(f"Chargement modèle pyfunc depuis : {model_uri}")
+    mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
+    model_uri = "models:/Light_GBM_Best_Model/Production"
     return mlflow.pyfunc.load_model(model_uri)
 
-
-# --- Chargement du modèle natif LightGBM depuis le pipeline ---
+# Chargement modèle LightGBM natif (depuis pipeline MLflow)
 def load_model_lightgbm():
     set_tracking_uri()
     model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
-    print(f"Chargement modèle natif depuis : {model_uri}")
     model_pyfunc = mlflow.pyfunc.load_model(model_uri)
     pipeline = model_pyfunc._model_impl.sklearn_model
-    model_native = pipeline.named_steps["model"]
-    return model_native
+    return pipeline.named_steps["model"]
 
-# --- Chargement données clients ---
 def load_client_data():
     path = os.path.join(os.path.dirname(__file__), "..", "data", "clients_test.csv")
     df = pd.read_csv(os.path.abspath(path))
     df.set_index("SK_ID_CURR", inplace=True)
     return df
 
-# --- Conversion types numériques selon schéma modèle ---
 def convert_numeric_columns_to_model_dtype(model, df):
     input_schema = model.metadata.get_input_schema()
     if input_schema is None:
-        print("Attention : le modèle ne contient pas de schéma d'entrée.")
+        print("Modèle sans schéma : conversion non appliquée.")
         return df
 
     type_map = {}
@@ -69,28 +58,20 @@ def convert_numeric_columns_to_model_dtype(model, df):
             try:
                 df[col] = df[col].astype(dtype)
             except Exception as e:
-                print(f"Erreur conversion colonne {col} en {dtype}: {e}")
+                print(f"Conversion échouée sur {col} en {dtype}: {e}")
     return df
 
-# --- Prédiction avec modèle pyfunc ---
-def predict_default(model, client_id, df_clients, seuil_metier=0.5454545454545455):
+def predict_default(model, client_id, df_clients, seuil_metier=0.545):
     if client_id not in df_clients.index:
         return {"error": f"Client {client_id} non trouvé."}
 
     client_data = df_clients.loc[[client_id]].copy()
-    client_data["SK_ID_CURR"] = client_id  # parfois requis selon modèle
-
+    client_data["SK_ID_CURR"] = client_id
     client_data = convert_numeric_columns_to_model_dtype(model, client_data)
 
     probas = model.predict(client_data)
 
-    if hasattr(model, "best_threshold") and seuil_metier is None:
-        seuil_metier = model.best_threshold
-    if seuil_metier is None:
-        raise ValueError("Aucun seuil métier défini.")
-
     prediction = int(probas[0] >= seuil_metier)
-
     sexe = "F" if client_data.get("CODE_GENDER_F", False).values[0] else \
            ("M" if client_data.get("CODE_GENDER_M", False).values[0] else "N/A")
 
@@ -104,27 +85,18 @@ def predict_default(model, client_id, df_clients, seuil_metier=0.545454545454545
         "seuil_metier": seuil_metier
     }
 
-# --- SHAP global ---
 def get_shap_global(model_native, X_background):
     import shap
     explainer = shap.TreeExplainer(model_native)
     shap_values = explainer.shap_values(X_background)
-
     mean_shap = abs(shap_values).mean(axis=0)
-    features = X_background.columns.tolist()
+    return {"features": X_background.columns.tolist(), "values": mean_shap.tolist()}
 
-    return {
-        "features": features,
-        "values": mean_shap.tolist()
-    }
-
-# --- SHAP local ---
 def get_shap_local(model_native, client_data):
     import shap
     explainer = shap.TreeExplainer(model_native)
     shap_values = explainer.shap_values(client_data)
     expected_value = explainer.expected_value
-
     return {
         "shap_values": shap_values[0].tolist() if isinstance(shap_values, list) else shap_values.tolist(),
         "expected_value": expected_value[0] if isinstance(expected_value, (list, tuple)) else expected_value,
