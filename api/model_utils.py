@@ -9,10 +9,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.config import MLFLOW_TRACKING_URI, MODEL_NAME, MODEL_STAGE
 
 
+
 def load_model():
-    model_uri = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app/306183281787906134/cabaeec2dcdd42c89d5a47511af1c6cd/artifacts/LightGBM"
-    model = mlflow.pyfunc.load_model(model_uri)
-    return model
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
+    return mlflow.pyfunc.load_model(model_uri)
 
 def load_model_lightgbm():
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)  # Utilise la même variable
