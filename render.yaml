@@ -1,13 +1,11 @@
 services:
   - type: web
-    name: mlflow-server
-    env: docker
+    name: fastapi-api
+    env: python
     plan: free
-    dockerfilePath: Dockerfile
+    buildCommand: pip install -r requirements.txt
+    startCommand: PYTHONPATH=. uvicorn api.app:app --host=0.0.0.0 --port=8000
+    runtime: python
+    region: oregon
+    branch: main
     autoDeploy: true
-    ports:
-      - port: 5000
-    healthCheckPath: /
-    persistentDisk:
-      mountPath: /app/artifacts
-      sizeGb: 1

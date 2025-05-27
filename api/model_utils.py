@@ -1,12 +1,11 @@
 import mlflow
 import mlflow.pyfunc
 import mlflow.lightgbm
-import os
 import pandas as pd
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import MLFLOW_TRACKING_URI
+from src.config import MLFLOW_TRACKING_URI
 
 MLFLOW_REMOTE_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
 MODEL_NAME = "Light_GBM_Best_Model"
