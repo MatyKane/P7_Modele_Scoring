@@ -8,17 +8,13 @@ from api.model_utils import (
     get_shap_global,
     get_shap_local,
 )
-import pandas as pd
 
 app = FastAPI(title="API Scoring Crédit")
 
-# Chargement modèle et données au démarrage
 try:
     model_pyfunc = load_model()
     model_native = load_model_lightgbm()
     df_clients = load_client_data()
-
-    # Données de fond pour SHAP global (100 premières lignes typiquement)
     X_background = df_clients.head(100).copy()
     X_background = convert_numeric_columns_to_model_dtype(model_pyfunc, X_background)
 
@@ -54,6 +50,5 @@ def shap_local(client_id: int):
         return get_shap_local(model_native, client_data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur SHAP local : {e}")
-    
-# Pour exécuter localement :
-# uvicorn app:app --reload --port 5000
+
+# Pour lancer : uvicorn app:app --reload --port 8000

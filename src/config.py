@@ -14,7 +14,7 @@ MLFLOW_REMOTE_URI = "https://6ac1-2001-861-4050-4290-f02f-757a-679-964.ngrok-fre
 
 # --- Nom et stage du modèle MLflow ---
 MODEL_NAME = "Light_GBM_Best_Model"
-MODEL_STAGE = "Production"
+MODEL_STAGE = "latest"
 
 # Coût métier
 COUT_FN = 10
