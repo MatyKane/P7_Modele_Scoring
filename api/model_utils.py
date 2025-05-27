@@ -3,6 +3,7 @@ import mlflow.pyfunc
 import mlflow.lightgbm
 import os
 import pandas as pd
+from config import MLFLOW_TRACKING_URI
 
 MLFLOW_REMOTE_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
 MODEL_NAME = "Light_GBM_Best_Model"
@@ -14,6 +15,7 @@ def load_model():
     model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"  # utilise le modèle du Registry distant
     model = mlflow.pyfunc.load_model(model_uri)
     return model
+
 
 # --- Chargement modèle LightGBM natif (pour SHAP) depuis serveur ---
 def load_model_lightgbm():

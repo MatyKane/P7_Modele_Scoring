@@ -9,8 +9,17 @@ TARGET_PATH = "TARGET.csv"
 TARGET_COL = "TARGET"
 
 # MLflow
-MLFLOW_TRACKING_URI = f"file:///{os.path.abspath('./mlruns').replace(os.sep, '/')}"
-EXPERIMENT_NAME = "Classification_Modeles"
+# Pour dev local
+LOCAL_MLFLOW_URI = f"file:///{os.path.abspath('./mlruns').replace(os.sep, '/')}"
+
+# Pour prod (serveur distant)
+REMOTE_MLFLOW_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
+
+# Choisir dynamiquement selon contexte
+if os.getenv("ENV") == "prod":
+    MLFLOW_TRACKING_URI = REMOTE_MLFLOW_URI
+else:
+    MLFLOW_TRACKING_URI = LOCAL_MLFLOW_URI
 
 # Coût métier
 COUT_FN = 10
