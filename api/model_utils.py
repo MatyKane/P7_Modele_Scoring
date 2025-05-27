@@ -1,22 +1,24 @@
+import mlflow
 import mlflow.pyfunc
+import mlflow.lightgbm
 import os
 import pandas as pd
 
-# --- Chargement modèle pyfunc (pipeline sklearn) depuis dossier local ---
+# URI MLflow distant via ngrok
+REMOTE_MLFLOW_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
+MODEL_URI = "models:/Light_GBM_Best_Model/Production"
+
+# --- Chargement modèle pyfunc (pipeline sklearn) depuis serveur distant ---
 def load_model():
-    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))  # pris dans variable d'env
-    model_uri = "models:/Light_GBM_Best_Model/Production"  # modèle dans le registry, stage Production
-    mlflow.set_tracking_uri("https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app")
-    model = mlflow.pyfunc.load_model(model_uri)
+    mlflow.set_tracking_uri(REMOTE_MLFLOW_URI)
+    model = mlflow.pyfunc.load_model(MODEL_URI)
     return model
 
-# --- Chargement modèle LightGBM natif (pour SHAP) depuis dossier local ---
+# --- Chargement modèle LightGBM natif (pour SHAP) depuis serveur distant ---
 def load_model_lightgbm():
-    model_path = "models:/Light_GBM_Best_Model/Production"
-    model_pyfunc = mlflow.pyfunc.load_model(model_path)
-    # Accès au pipeline sklearn encapsulé dans pyfunc
+    mlflow.set_tracking_uri(REMOTE_MLFLOW_URI)
+    model_pyfunc = mlflow.pyfunc.load_model(MODEL_URI)
     pipeline = model_pyfunc._model_impl.sklearn_model
-    # Extraction du modèle LightGBM natif (dernier step nommé "model")
     model_native = pipeline.named_steps["model"]
     return model_native
 
@@ -33,7 +35,7 @@ def convert_numeric_columns_to_model_dtype(model, df):
     if input_schema is None:
         print("Attention : le modèle ne contient pas de schéma d'entrée.")
         return df
-    
+
     type_map = {}
     for input_col in input_schema.inputs:
         col_name = input_col.name
@@ -44,7 +46,7 @@ def convert_numeric_columns_to_model_dtype(model, df):
             type_map[col_name] = 'int32'
         else:
             type_map[col_name] = None
-    
+
     for col, dtype in type_map.items():
         if dtype is not None and col in df.columns:
             try:
@@ -57,7 +59,7 @@ def convert_numeric_columns_to_model_dtype(model, df):
 def predict_default(model, client_id, df_clients, seuil_metier=0.5454545454545455):
     if client_id not in df_clients.index:
         return {"error": f"Client {client_id} non trouvé."}
-    
+
     client_data = df_clients.loc[[client_id]].copy()
     client_data["SK_ID_CURR"] = client_id  # parfois requis selon modèle
 
@@ -74,7 +76,7 @@ def predict_default(model, client_id, df_clients, seuil_metier=0.545454545454545
 
     sexe = "F" if client_data.get("CODE_GENDER_F", False).values[0] else \
            ("M" if client_data.get("CODE_GENDER_M", False).values[0] else "N/A")
-    
+
     return {
         "SK_ID_CURR": int(client_id),
         "CODE_GENDER (Sexe)": sexe,
@@ -90,10 +92,10 @@ def get_shap_global(model_native, X_background):
     import shap
     explainer = shap.TreeExplainer(model_native)
     shap_values = explainer.shap_values(X_background)
-    
+
     mean_shap = abs(shap_values).mean(axis=0)
     features = X_background.columns.tolist()
-    
+
     return {
         "features": features,
         "values": mean_shap.tolist()
