@@ -1,23 +1,39 @@
+import os
+import sys
 import mlflow
 import mlflow.pyfunc
 import mlflow.lightgbm
 import pandas as pd
-import sys
-import os
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from src.config import MLFLOW_TRACKING_URI, MODEL_NAME, MODEL_STAGE
-
+from src.config import MODEL_NAME, MODEL_STAGE, MLFLOW_REMOTE_URI
 
 
+# --- Détection dynamique de l'URI MLflow ---
+def set_tracking_uri():
+    env = os.getenv("ENV", "dev")
+    if env == "prod":
+        print("ENV=prod : utilisation du serveur MLflow distant")
+        mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
+    else:
+        print("ENV=dev : utilisation du MLflow local")
+        local_uri = f"file:///{os.path.abspath('./mlruns').replace(os.sep, '/')}"
+        mlflow.set_tracking_uri(local_uri)
+
+
+# --- Chargement du modèle pyfunc (MLflow) ---
 def load_model():
-    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    set_tracking_uri()
     model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
+    print(f"Chargement modèle pyfunc depuis : {model_uri}")
     return mlflow.pyfunc.load_model(model_uri)
 
+
+# --- Chargement du modèle natif LightGBM depuis le pipeline ---
 def load_model_lightgbm():
-    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)  # Utilise la même variable
-    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"  # MODEL_NAME et MODEL_STAGE doivent être définis dans config.py
+    set_tracking_uri()
+    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
+    print(f"Chargement modèle natif depuis : {model_uri}")
     model_pyfunc = mlflow.pyfunc.load_model(model_uri)
     pipeline = model_pyfunc._model_impl.sklearn_model
     model_native = pipeline.named_steps["model"]

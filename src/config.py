@@ -11,13 +11,6 @@ TARGET_COL = "TARGET"
 # --- URIs MLflow ---
 MLFLOW_REMOTE_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
 
-# URI locale (pour développement local)
-LOCAL_MLFLOW_URI = f"file:///{os.path.abspath('./mlruns').replace(os.sep, '/')}"
-
-# URI dynamique selon l'environnement
-MLFLOW_TRACKING_URI = (
-    MLFLOW_REMOTE_URI if os.getenv("ENV") == "prod" else LOCAL_MLFLOW_URI
-)
 
 # --- Nom et stage du modèle MLflow ---
 MODEL_NAME = "Light_GBM_Best_Model"
