@@ -5,24 +5,21 @@ import pandas as pd
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.config import MLFLOW_TRACKING_URI
+
+from src.config import MLFLOW_TRACKING_URI, MODEL_NAME, MODEL_STAGE
 
 MLFLOW_REMOTE_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
 MODEL_NAME = "Light_GBM_Best_Model"
 MODEL_STAGE = "Production"
 
-# --- Chargement modèle pyfunc (pipeline sklearn) depuis serveur MLflow ---
 def load_model():
-    mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
-    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"  # utilise le modèle du Registry distant
+    model_uri = f"{MLFLOW_TRACKING_URI}/306183281787906134/cabaeec2dcdd42c89d5a47511af1c6cd/artifacts/LightGBM"
     model = mlflow.pyfunc.load_model(model_uri)
     return model
 
-
-# --- Chargement modèle LightGBM natif (pour SHAP) depuis serveur ---
 def load_model_lightgbm():
-    mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
-    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)  # Utilise la même variable
+    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"  # MODEL_NAME et MODEL_STAGE doivent être définis dans config.py
     model_pyfunc = mlflow.pyfunc.load_model(model_uri)
     pipeline = model_pyfunc._model_impl.sklearn_model
     model_native = pipeline.named_steps["model"]

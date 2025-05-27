@@ -9,13 +9,12 @@ TARGET_PATH = "TARGET.csv"
 TARGET_COL = "TARGET"
 
 # MLflow
-# Pour dev local
+MLFLOW_REMOTE_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
+MODEL_NAME = "Light_GBM_Best_Model"
+MODEL_STAGE = "Production"
+
 LOCAL_MLFLOW_URI = f"file:///{os.path.abspath('./mlruns').replace(os.sep, '/')}"
-
-# Pour prod (serveur distant)
 REMOTE_MLFLOW_URI = "https://b325-2001-861-4050-4290-f02f-757a-679-964.ngrok-free.app"
-
-# Choisir dynamiquement selon contexte
 if os.getenv("ENV") == "prod":
     MLFLOW_TRACKING_URI = REMOTE_MLFLOW_URI
 else:
