@@ -29,9 +29,9 @@ COUT_FP = 1
 #from sklearn.linear_model import LogisticRegression
 #from sklearn.ensemble import RandomForestClassifier
 #from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
+#from lightgbm import LGBMClassifier
 
-MODELS_CONFIG = {
+#MODELS_CONFIG = {
     #'LogisticRegression': (LogisticRegression(max_iter=1000), {
         #'model__C': [0.01, 1, 10],
         #'model__solver': ['lbfgs']
@@ -50,11 +50,11 @@ MODELS_CONFIG = {
         #'model__subsample': [1.0],
         #'model__colsample_bytree': [0.7]
     #}),
-    'LightGBM': (LGBMClassifier(), {
-        'model__n_estimators': [50, 100],
-        'model__num_leaves': [31, 50],
-        'model__learning_rate': [0.1, 0.2],
-        'model__subsample': [1.0],
-        'model__colsample_bytree': [0.7]
-    })
-}
+    #'LightGBM': (LGBMClassifier(), {
+        #'model__n_estimators': [50, 100],
+        #'model__num_leaves': [31, 50],
+        #'model__learning_rate': [0.1, 0.2],
+        #'model__subsample': [1.0],
+        #'model__colsample_bytree': [0.7]
+    #})
+#}
