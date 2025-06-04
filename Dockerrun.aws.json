@@ -1,0 +1,36 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "fastapi-backend",
+      "image": "348376723843.dkr.ecr.eu-west-3.amazonaws.com/fastapi-backend:latest",
+      "essential": true,
+      "memory": 512,
+      "portMappings": [
+        {
+          "hostPort": 8000,
+          "containerPort": 8000
+        }
+      ]
+    },
+    {
+      "name": "streamlit-ui",
+      "image": "348376723843.dkr.ecr.eu-west-3.amazonaws.com/streamlit-ui:latest",
+      "essential": true,
+      "memory": 512,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 8501
+        }
+      ],
+      "environment": [
+        {
+          "name": "API_URL",
+          "value": "http://fastapi-backend:8000"
+        }
+      ],
+      "links": ["fastapi-backend"]
+    }
+  ]
+}

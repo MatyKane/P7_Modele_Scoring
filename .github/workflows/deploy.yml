@@ -1,0 +1,98 @@
+name: Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REGISTRY: ${{ secrets.DOCKER_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+jobs:
+  deploy:
+    name: Build, Push to ECR & Deploy to EB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push FastAPI image
+        run: |
+          docker build -t $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_FASTAPI }} ./api
+          docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_FASTAPI }}
+
+      - name: Build and push Streamlit image
+        run: |
+          docker build -t $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_STREAMLIT }} ./streamlit
+          docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_STREAMLIT }}
+
+      - name: Create Dockerrun.aws.json
+        run: |
+          cat > Dockerrun.aws.json <<EOF
+          {
+            "AWSEBDockerrunVersion": 2,
+            "containerDefinitions": [
+              {
+                "name": "fastapi-backend",
+                "image": "${ECR_REGISTRY}/${{ secrets.ECR_REPOSITORY_FASTAPI }}:latest",
+                "essential": true,
+                "memory": 512,
+                "portMappings": [
+                  {
+                    "hostPort": 8000,
+                    "containerPort": 8000
+                  }
+                ]
+              },
+              {
+                "name": "streamlit-ui",
+                "image": "${ECR_REGISTRY}/${{ secrets.ECR_REPOSITORY_STREAMLIT }}:latest",
+                "essential": true,
+                "memory": 512,
+                "portMappings": [
+                  {
+                    "hostPort": 80,
+                    "containerPort": 8501
+                  }
+                ],
+                "environment": [
+                  {
+                    "name": "API_URL",
+                    "value": "http://fastapi-backend:8000"
+                  }
+                ],
+                "links": ["fastapi-backend"]
+              }
+            ]
+          }
+          EOF
+
+      - name: Zip Dockerrun.aws.json
+        run: zip deploy.zip Dockerrun.aws.json
+
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name ${{ secrets.EB_APPLICATION_NAME }} \
+            --version-label v-${{ github.run_number }} \
+            --source-bundle S3Bucket="elasticbeanstalk-${{ secrets.AWS_REGION }}-${{ secrets.DOCKER_AWS_ACCOUNT_ID }}",S3Key="deployments/deploy-v${{ github.run_number }}.zip" \
+            || echo "App version may already exist"
+
+          aws s3 cp deploy.zip s3://elasticbeanstalk-${{ secrets.AWS_REGION }}-${{ secrets.DOCKER_AWS_ACCOUNT_ID }}/deployments/deploy-v${{ github.run_number }}.zip
+
+          aws elasticbeanstalk update-environment \
+            --environment-name ${{ secrets.EB_ENVIRONMENT_NAME }} \
+            --version-label v-${{ github.run_number }}

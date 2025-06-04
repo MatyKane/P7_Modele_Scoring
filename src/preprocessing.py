@@ -1,3 +1,6 @@
+import pandas as pd
+import numpy as np
+
 def tableau_valeurs_manquantes(df):
     """Calcule et affiche un tableau des valeurs manquantes par colonne avec leurs pourcentages."""
     nb_manquantes = df.isnull().sum()

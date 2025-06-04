@@ -12,25 +12,26 @@ def set_tracking_uri():
         mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
     else:
         print("ENV=dev : MLflow local")
-        local_uri = f"file:///{os.path.abspath('./mlruns').replace(os.sep, '/')}"
-        mlflow.set_tracking_uri(local_uri)
+        # Fixe explicitement le chemin dans le conteneur
+        mlflow.set_tracking_uri("file:///app/mlruns")
 
 def load_model():
-    mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
-    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
-    return mlflow.pyfunc.load_model(model_uri)
-
+    # Charge modèle pyfunc depuis le chemin local ou distant selon tracking URI
+    model_path = os.path.join(os.path.dirname(__file__), "model")
+    return mlflow.pyfunc.load_model(model_path)
 
 def load_model_lightgbm():
-    mlflow.set_tracking_uri(MLFLOW_REMOTE_URI)
-    model_uri = "models:/Light_GBM_Best_Model/latest"
-    print(f"Chargement modèle LightGBM natif depuis : {model_uri}")
-    model_native = mlflow.lightgbm.load_model(model_uri)
-    return model_native
+    model_path = os.path.join(os.path.dirname(__file__), "model")
+    print(f"Chargement modèle LightGBM depuis : {model_path}")
+    return mlflow.lightgbm.load_model(model_path)
+
 
 def load_client_data():
     path = os.path.join(os.path.dirname(__file__), "..", "data", "clients_test.csv")
-    df = pd.read_csv(os.path.abspath(path))
+    abs_path = os.path.abspath(path)
+    if not os.path.exists(abs_path):
+        raise FileNotFoundError(f" Fichier clients_test.csv introuvable à : {abs_path}")
+    df = pd.read_csv(abs_path)
     df.set_index("SK_ID_CURR", inplace=True)
     return df
 
@@ -59,7 +60,8 @@ def convert_numeric_columns_to_model_dtype(model, df):
                 print(f"Conversion échouée sur {col} en {dtype}: {e}")
     return df
 
-def predict_default(model, client_id, df_clients, seuil_metier=0.66):
+def predict_default(model, client_id, df_clients, seuil_metier=
+0.5454545454545455):
     if client_id not in df_clients.index:
         return {"error": f"Client {client_id} non trouvé."}
 

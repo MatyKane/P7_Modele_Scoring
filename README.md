@@ -82,106 +82,11 @@ L’ensemble du projet inclut :
 **Livrables**
 
 * Notebook de préparation des données et modélisation
-* API de scoring (code et documentation)
-* Dossier Dashboard contenant les fichiers liés au fonctionnement du dashboard
-* Interface Streamlit de test
+* API de scoring
+* Dossier code
 * Rapport Evidently de détection de dérive
+* Dossier Dashboard contenant les fichiers liés au fonctionnement du dashboard
 * Présentation finale du projet
-
-***
-
-**Structure du projet**
-P7_Modele_Scoring/
-
-│
-
-├── data/                          # Données brutes et prétraitées
-
-│   ├── data_train.csv
-
-│   ├── application_train.csv
-
-│   ├── application_test.csv
-
-│
-
-├── notebooks/                    # Notebooks de développement
-
-│   ├── 01_data_preprocessing.ipynb
-
-│   ├── 02_model_training_with_mlflow.ipynb
-
-│
-
-├── src/                          # Code source principal
-
-│   ├── preprocessing.py
-
-│   ├── merging.py
-
-│   ├── feature_engineering.py
-
-│   ├── train_model.py
-
-│   ├── evaluate_model.py
-
-│   ├── mlflow_tracking.py
-
-│   ├── config.py
-
-│   ├── utils.py
-
-│   ├── Vizualisation.py
-
-│   ├── data_drift_report.py
-
-│
-
-├── api/                          # Code de l’API FasApi
-
-│   ├── app.py                    # Entrée principale de l’API
-
-│   ├── model_utils.py           # Chargement - prédiction via le modèle
-
-│
-
-├── dashboards/                   # Outils d’analyse et interface de test
-
-│   ├── data_drift_analysis.html # Rapport de drift Evidently
-
-│   ├── streamlit_app.py         # Interface de test Streamlit
-
-│
-
-├── tests/                        # Tests unitaires
-
-│   ├── test_preprocessing.py
-
-│   ├── test_prediction.py
-
-│
-
-├── .github/workflows/           # Intégration continue (CI/CD GitHub Actions)
-
-│   ├── test_and_deploy.yml
-
-│
-
-├── mlruns/                       # Tracking des expérimentations MLflow (auto)
-
-│
-
-├── Procfile                      # Déploiement Heroku
-
-├── requirements.txt             # Dépendances du projet
-
-├── streamlit_app.py             # Point d’entrée
-
-├── test_mlflow.py               # Test de tracking
-
-├── .gitignore                   # Fichiers ignorés par Git
-
-├── README.md                    # Documentation du projet
 
 ***
 

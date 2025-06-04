@@ -1,6 +1,6 @@
-import pytest
 import pandas as pd
 import numpy as np
+import pytest
 from src.preprocessing import (
     tableau_valeurs_manquantes,
     detecter_XNA,
