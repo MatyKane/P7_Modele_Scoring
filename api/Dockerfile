@@ -9,10 +9,15 @@ COPY src /app/src
 #COPY data/ /app/data/
 #COPY data/ /data/
 
+
+
+# Installer unzip pour pouvoir dézipper data.zip
+RUN apt-get update && apt-get install -y unzip && rm -rf /var/lib/apt/lists/*
 # Copier uniquement le zip
 COPY data.zip /app/data.zip
 # Décompresser dans /app/data
 RUN unzip /app/data.zip -d /app/data
+
 
 
 # Copier le modèle MLflow (chemin relatif utilisé dans le code)
