@@ -1,4 +1,4 @@
-name: Deploy to AWS Elastic Beanstalk
+name: Deploy to AWS
 
 on:
   push:
@@ -6,40 +6,43 @@ on:
       - master
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REGISTRY: ${{ secrets.DOCKER_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+  AWS_REGION: eu-west-3
+  ECR_REGISTRY: 348376723843.dkr.ecr.eu-west-3.amazonaws.com
+  FASTAPI_IMAGE: fastapi-backend
+  STREAMLIT_IMAGE: streamlit-ui
+  EB_APP_NAME: Solvability
+  EB_ENV_NAME: Solvability-env-1
 
 jobs:
   deploy:
-    name: Build, Push to ECR & Deploy to EB
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
       - name: Build and push FastAPI image
         run: |
-          docker build -t $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_FASTAPI }} ./api
-          docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_FASTAPI }}
+          docker build -t $ECR_REGISTRY/$FASTAPI_IMAGE:latest ./api
+          docker push $ECR_REGISTRY/$FASTAPI_IMAGE:latest
 
       - name: Build and push Streamlit image
         run: |
-          docker build -t $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_STREAMLIT }} ./streamlit
-          docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_STREAMLIT }}
+          docker build -t $ECR_REGISTRY/$STREAMLIT_IMAGE:latest ./streamlit
+          docker push $ECR_REGISTRY/$STREAMLIT_IMAGE:latest
 
-      - name: Create Dockerrun.aws.json
+      - name: Generate Dockerrun.aws.json
         run: |
           cat > Dockerrun.aws.json <<EOF
           {
@@ -47,7 +50,7 @@ jobs:
             "containerDefinitions": [
               {
                 "name": "fastapi-backend",
-                "image": "${ECR_REGISTRY}/${{ secrets.ECR_REPOSITORY_FASTAPI }}:latest",
+                "image": "$ECR_REGISTRY/$FASTAPI_IMAGE:latest",
                 "essential": true,
                 "memory": 512,
                 "portMappings": [
@@ -59,7 +62,7 @@ jobs:
               },
               {
                 "name": "streamlit-ui",
-                "image": "${ECR_REGISTRY}/${{ secrets.ECR_REPOSITORY_STREAMLIT }}:latest",
+                "image": "$ECR_REGISTRY/$STREAMLIT_IMAGE:latest",
                 "essential": true,
                 "memory": 512,
                 "portMappings": [
@@ -80,19 +83,20 @@ jobs:
           }
           EOF
 
-      - name: Zip Dockerrun.aws.json
-        run: zip deploy.zip Dockerrun.aws.json
+      - name: Zip app for Elastic Beanstalk
+        run: zip app.zip Dockerrun.aws.json
 
-      - name: Deploy to Elastic Beanstalk
+      - name: Upload app zip to S3
+        run: aws s3 cp app.zip s3://elasticbeanstalk-eu-west-3-348376723843/app-v${{ github.run_number }}.zip
+
+      - name: Create application version in Elastic Beanstalk
         run: |
           aws elasticbeanstalk create-application-version \
-            --application-name ${{ secrets.EB_APPLICATION_NAME }} \
+            --application-name $EB_APP_NAME \
             --version-label v-${{ github.run_number }} \
-            --source-bundle S3Bucket="elasticbeanstalk-${{ secrets.AWS_REGION }}-${{ secrets.DOCKER_AWS_ACCOUNT_ID }}",S3Key="deployments/deploy-v${{ github.run_number }}.zip" \
-            || echo "App version may already exist"
+            --source-bundle S3Bucket=elasticbeanstalk-eu-west-3-348376723843,S3Key=app-v${{ github.run_number }}.zip || true
 
-          aws s3 cp deploy.zip s3://elasticbeanstalk-${{ secrets.AWS_REGION }}-${{ secrets.DOCKER_AWS_ACCOUNT_ID }}/deployments/deploy-v${{ github.run_number }}.zip
-
-          aws elasticbeanstalk update-environment \
-            --environment-name ${{ secrets.EB_ENVIRONMENT_NAME }} \
-            --version-label v-${{ github.run_number }}
+      - name: Deploy application version to Elastic Beanstalk
+        run: aws elasticbeanstalk update-environment \
+          --environment-name $EB_ENV_NAME \
+          --version-label v-${{ github.run_number }}
