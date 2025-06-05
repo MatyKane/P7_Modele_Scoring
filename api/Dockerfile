@@ -6,8 +6,14 @@ COPY api/ /app
 COPY src /app/src
 
 # Copier le dossier data depuis la racine du projet
-COPY data/ /app/data/
-COPY data/ /data/
+#COPY data/ /app/data/
+#COPY data/ /data/
+
+# Copier uniquement le zip
+COPY data.zip /app/data.zip
+# Décompresser dans /app/data
+RUN unzip /app/data.zip -d /app/data
+
 
 # Copier le modèle MLflow (chemin relatif utilisé dans le code)
 COPY api/model /app/model
