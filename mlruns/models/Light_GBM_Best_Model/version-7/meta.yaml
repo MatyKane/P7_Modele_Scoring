@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1748363846249
+current_stage: Production
+description: ''
+last_updated_timestamp: 1748364209781
+name: Light_GBM_Best_Model
+run_id: b188224efb5a46e59856a081eae86725
+run_link: ''
+source: file:///C:/Users/matym/mlruns/306183281787906134/b188224efb5a46e59856a081eae86725/artifacts/model
+status: READY
+status_message: null
+storage_location: file:///C:/Users/matym/mlruns/306183281787906134/b188224efb5a46e59856a081eae86725/artifacts/model
+user_id: null
+version: 7

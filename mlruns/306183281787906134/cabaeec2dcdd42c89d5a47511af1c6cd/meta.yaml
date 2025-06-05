@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/matym/mlruns/306183281787906134/cabaeec2dcdd42c89d5a47511af1c6cd/artifacts
+end_time: 1748086108758
+entry_point_name: ''
+experiment_id: '306183281787906134'
+lifecycle_stage: active
+run_id: cabaeec2dcdd42c89d5a47511af1c6cd
+run_name: LightGBM
+run_uuid: cabaeec2dcdd42c89d5a47511af1c6cd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748084396676
+status: 3
+tags: []
+user_id: matym
