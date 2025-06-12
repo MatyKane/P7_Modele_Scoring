@@ -6,8 +6,8 @@ COPY api/ /app
 COPY src /app/src
 
 # Copier le dossier data depuis la racine du projet
-COPY data/ /app/data/
-COPY data/ /data/
+#COPY data/ /app/data/
+#COPY data/ /data/
 
 
 
