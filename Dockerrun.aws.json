@@ -8,7 +8,7 @@
       "memory": 512,
       "portMappings": [
         {
-          "hostPort": 8000,
+          "hostPort": 80,
           "containerPort": 8000
         }
       ]
@@ -16,18 +16,18 @@
     {
       "name": "streamlit-ui",
       "image": "348376723843.dkr.ecr.eu-west-3.amazonaws.com/streamlit-ui:latest",
-      "essential": true,
+      "essential": false, 
       "memory": 512,
       "portMappings": [
         {
-          "hostPort": 80,
+          "hostPort": 8501,
           "containerPort": 8501
         }
       ],
       "environment": [
         {
           "name": "API_URL",
-          "value": "http://fastapi-backend:8000"
+          "value": "http://localhost:80"
         }
       ],
       "links": ["fastapi-backend"]

@@ -32,7 +32,7 @@ Saisissez un identifiant client pour obtenir la prédiction et des explications 
 # Détection de l’URL de l’API (mettre avant l’appel à check_api_available)
 import tomllib
 
-API_URL = os.getenv("API_URL", "http://fastapi-backend:8000")
+API_URL = os.getenv("API_URL", "http://localhost:80")
 
 
 # Vérification que l’API est bien en ligne
